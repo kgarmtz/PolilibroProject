@@ -1,0 +1,23 @@
+{% load static %}
+
+<header class="header" id="header">
+    <div class="header__logo-box">
+        <img src="{% static 'images/logo.svg' %}" alt="Cálculo-aplicado" class="header__logo">
+        <a class="header__title" href="#">Cálculo Aplicado</a>
+    </div>
+    <nav class="header__nav">
+        <ul class="header__list" role="list">
+            <li><a class="btn btn--red" id="modal-1" href="#" role="modal-button"> <span
+                        class="btn__inner">Introducción</span> </a>
+            </li>
+            <li><a class="btn btn--blue" id="modal-2" href="#" role="modal-button"> <span
+                        class="btn__inner">Organización</span>
+                </a>
+            </li>
+            <li><a class="btn btn--yellow" id="modal-3" href="#" role="modal-button"> <span
+                        class="btn__inner">Unidades</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>

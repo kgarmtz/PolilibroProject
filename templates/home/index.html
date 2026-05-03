@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Recurso Digital de Cálculo Aplicado
+{% endblock title %}
+
+{% block description %}
+<meta name="description" content="{{ book.description }}">
+{% endblock description %}
+
+{% block content %}
+{% include "includes/header.html" %}
+{% include "includes/header-mobile.html" %}
+
+<main class="margin-top-small">
+    <section class="section-main">
+        <div class="section-main__title flow">
+            <h1 class="heading-primary">
+                {{book.title|safe}}
+            </h1>
+            <p class="section-paragraph"> {{book.description}} </p>
+        </div>
+        <div class="section-main__image">
+            <img class="img-svg" src="{{ book.image.url }}" alt="Portada del libro">
+        </div>
+    </section>
+
+    {% for unit, section in unit_section %}
+    <section class="section-unit">
+        <div class="section-unit__title flow">
+            {% if unit.color == 'yellow' %}
+            <h2 class="heading-secondary heading-secondary--{{unit.color}}" style="margin-right: 7.7rem;">
+                {{unit.name}}
+            </h2>
+            {% elif unit.color == 'green' %}
+            <h2 class="heading-secondary heading-secondary--{{unit.color}}" style="margin-right: 9.4rem;">
+                {{unit.name}}
+            </h2>
+            {% else %}
+            <h2 class="heading-secondary heading-secondary--{{unit.color}}">
+                {{unit.name}}
+            </h2>
+            {% endif %}
+
+            <p class="section-paragraph"> {{unit.description}} </p>
+            <a class="btn btn--{{unit.color}}" href="{{section.get_url}}">
+                <span class="btn__inner">Ir a la Unidad</span>
+            </a>
+        </div>
+        <div class="section-unit__image">
+            <img class="img-svg" src="{{unit.image.url}}" alt="Portada-de-la-Unidad">
+        </div>
+    </section>
+    {% endfor %}
+</main>
+
+{% include "includes/footer.html" %}
+
+<!-- Modal Start 1//-->
+<div class="modal" aria-labelledby="modal-1" role="modal">
+    <button class="modal__button" role="modal-close">
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M17.7485 15.025L29.4299 3.34324C30.1901 2.58339 30.1901 1.35482 29.4299 0.594973C28.67 -0.164877 27.4415 -0.164877 26.6816 0.594973L14.9998 12.2767L3.31843 0.594973C2.55822 -0.164877 1.33 -0.164877 0.570155 0.594973C-0.190052 1.35482 -0.190052 2.58339 0.570155 3.34324L12.2516 15.025L0.570155 26.7068C-0.190052 27.4666 -0.190052 28.6952 0.570155 29.455C0.948834 29.8341 1.44674 30.0245 1.94429 30.0245C2.44184 30.0245 2.93939 29.8341 3.31843 29.455L14.9998 17.7733L26.6816 29.455C27.0606 29.8341 27.5582 30.0245 28.0557 30.0245C28.5533 30.0245 29.0508 29.8341 29.4299 29.455C30.1901 28.6952 30.1901 27.4666 29.4299 26.7068L17.7485 15.025Z" />
+        </svg>
+    </button>
+    <div class="flow modal__content">
+        {{ book.about|safe }}
+    </div>
+</div>
+<!-- Modal End 1//-->
+
+<!-- Modal Start 2//-->
+<div class="modal" aria-labelledby="modal-2" role="modal">
+    <button class="modal__button" role="modal-close">
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M17.7485 15.025L29.4299 3.34324C30.1901 2.58339 30.1901 1.35482 29.4299 0.594973C28.67 -0.164877 27.4415 -0.164877 26.6816 0.594973L14.9998 12.2767L3.31843 0.594973C2.55822 -0.164877 1.33 -0.164877 0.570155 0.594973C-0.190052 1.35482 -0.190052 2.58339 0.570155 3.34324L12.2516 15.025L0.570155 26.7068C-0.190052 27.4666 -0.190052 28.6952 0.570155 29.455C0.948834 29.8341 1.44674 30.0245 1.94429 30.0245C2.44184 30.0245 2.93939 29.8341 3.31843 29.455L14.9998 17.7733L26.6816 29.455C27.0606 29.8341 27.5582 30.0245 28.0557 30.0245C28.5533 30.0245 29.0508 29.8341 29.4299 29.455C30.1901 28.6952 30.1901 27.4666 29.4299 26.7068L17.7485 15.025Z" />
+        </svg>
+    </button>
+    <div class="flow modal__content">
+
+        {{ book.organization|safe }}
+
+        <ul class="modal__list" role="list">
+            <li class="modal__item">
+                <img class="modal__icon" src="{% static 'images/icons/exercises-list.svg' %}"
+                    alt="Listas de ejercicios"> Listas de Ejercicios
+            </li>
+            <li class="modal__item">
+                <img class="modal__icon" src="{% static 'images/icons/activities.svg' %}" alt="Actividades">
+                Actividades
+            </li>
+            <li class="modal__item">
+                <img class="modal__icon" src="{% static 'images/icons/assessment.svg' %}" alt="Evaluaciones">
+                Evaluaciones
+            </li>
+            <li class="modal__item">
+                <img class="modal__icon" src="{% static 'images/icons/resources.svg' %}" alt="Recursos digitales">
+                Recursos
+            </li>
+        </ul>
+    </div>
+</div>
+<!-- Modal End 2//-->
+
+<!-- Modal Start 3//-->
+<div class="modal" aria-labelledby="modal-3" role="modal">
+    <button class="modal__button" role="modal-close">
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M17.7485 15.025L29.4299 3.34324C30.1901 2.58339 30.1901 1.35482 29.4299 0.594973C28.67 -0.164877 27.4415 -0.164877 26.6816 0.594973L14.9998 12.2767L3.31843 0.594973C2.55822 -0.164877 1.33 -0.164877 0.570155 0.594973C-0.190052 1.35482 -0.190052 2.58339 0.570155 3.34324L12.2516 15.025L0.570155 26.7068C-0.190052 27.4666 -0.190052 28.6952 0.570155 29.455C0.948834 29.8341 1.44674 30.0245 1.94429 30.0245C2.44184 30.0245 2.93939 29.8341 3.31843 29.455L14.9998 17.7733L26.6816 29.455C27.0606 29.8341 27.5582 30.0245 28.0557 30.0245C28.5533 30.0245 29.0508 29.8341 29.4299 29.455C30.1901 28.6952 30.1901 27.4666 29.4299 26.7068L17.7485 15.025Z" />
+        </svg>
+    </button>
+    <div class="flow modal__content">
+        {{ book.about_sections|safe }}
+    </div>
+</div>
+<!-- Modal End 3//-->
+
+{% endblock content %}
