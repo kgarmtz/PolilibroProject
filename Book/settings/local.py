@@ -11,7 +11,7 @@ ALLOWED_HOSTS = []
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR.child('db.sqlite3'),
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -21,14 +21,14 @@ DATABASES = {
 STATIC_URL = '/static/'
 # Defining the static files directory : BASE_DIR / 'static' 
 # where Django will find all the necessary statics files
-STATICFILES_DIRS = [BASE_DIR.child('static')]
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # All the images will be uploaded in this path when we 
 # register a new one in the Django Admin Panel
 MEDIA_URL = '/media/'
 
 # Directory that will hold all the user-uploaded files
-MEDIA_ROOT = BASE_DIR.child('media') 
+MEDIA_ROOT = BASE_DIR / 'media' 
 
 # Ckeditor settings
 CKEDITOR_UPLOAD_PATH = 'uploads/'

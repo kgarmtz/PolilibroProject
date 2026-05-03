@@ -1,8 +1,7 @@
-# Python packages
-from datetime import timedelta, datetime
 # Django packages
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse_lazy
+from django.utils import timezone
 # External models 
 from applications.book.models import Section
 
@@ -17,7 +16,7 @@ class SectionSitemap(Sitemap):
 
     # Sorting the url by chronological creation order
     
-class Sitemap(Sitemap):
+class StaticViewSitemap(Sitemap):
     protocol = 'https'
 
     def __init__(self, names):
@@ -30,7 +29,7 @@ class Sitemap(Sitemap):
         return 'monthly'
 
     def lastmod(self, obj):
-        return datetime.now()
+        return timezone.now()
     
     def location(self, obj):
         return reverse_lazy(obj)

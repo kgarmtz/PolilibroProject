@@ -1,11 +1,11 @@
 # Python standard libraries
-from datetime import timedelta, datetime
+from datetime import timedelta
 # Django libraries
 from django.db import models
-from django.urls import reverse, reverse_lazy
-from ckeditor.fields import RichTextField
+from django.urls import reverse
 from django.template.defaultfilters import slugify
 from django.core.validators import FileExtensionValidator
+from django.utils import timezone
 from ckeditor_uploader.fields import RichTextUploadingField
 
 # External models
@@ -56,20 +56,30 @@ class Section(models.Model):
         return reverse('book_app:chapter_section', args=[self.slug])
 
     # Generate the unique url for each section
-    def save(self, *args, **kwargs ):
+    def save(self, *, force_insert=False, force_update=False, using=None, update_fields=None):
         # current time 
-        now = datetime.now()
-        total_time = timedelta(
-            hours   = now.hour,
-            minutes = now.minute,
-            seconds = now.second,
+        if not self.slug:
+            now = timezone.now()
+            total_time = timedelta(
+                hours=now.hour,
+                minutes=now.minute,
+                seconds=now.second,
+            )
+
+            seconds = int(total_time.total_seconds())
+            slug_source = self.seo_name or self.name
+            self.slug = slugify(f'{slug_source} {seconds}')
+
+            if update_fields is not None:
+                update_fields = set(update_fields)
+                update_fields.add('slug')
+
+        super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
         )
-
-        seconds = int(total_time.total_seconds())
-        slug_unique = f'{self.seo_name} {str(seconds)}'
-        self.slug = slugify(slug_unique)
-
-        super(Section, self).save(*args, **kwargs)
 
 class Resource(models.Model):
     

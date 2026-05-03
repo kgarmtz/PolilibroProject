@@ -1,14 +1,19 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 # Local models
-from .models import Section, Unit
+from .models import Section
 
 # Create your views here.
 
 # Retrieve the section by the given id that was sent in the URL
 def viewSection(request, section_slug):
-    section = Section.objects.get(slug=section_slug)
-    color = section.chapter.unit.color
-    unit = Unit.objects.filter(color=color)[0]
+    section = get_object_or_404(
+        Section.objects.select_related('chapter__unit'),
+        slug=section_slug,
+        chapter__isnull=False,
+        chapter__unit__isnull=False,
+    )
+    unit = section.chapter.unit
+    color = unit.color
     exam = unit.exam
 
     options = {
@@ -24,7 +29,7 @@ def viewSection(request, section_slug):
         'chapters': chapters,
         'section': section,
         'color': color,
-        'id': options[str(unit.id)],
+        'id': options.get(str(unit.id), str(unit.id)),
         'exam': exam,   
     }
 

@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
-from django.contrib import admin, sitemaps
+from django.contrib import admin
 from django.conf.urls.static import static
 from django.urls import path, include, re_path
 # Import for Google AddSense
@@ -22,14 +22,15 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.views.generic.base import RedirectView
 # SEO stuff
 from django.contrib.sitemaps.views import sitemap
+from .views import fake_admin
 from applications.home.sitemap import (
     SectionSitemap,
-    Sitemap
+    StaticViewSitemap
 )
 
 # Our main urls
 urlpatterns_main = [
-    path('admin/', include('admin_honeypot.urls', namespace='admin_honeypot')),
+    path('admin/', fake_admin, name='fake_admin'),
     path('polilibroescom/', admin.site.urls),
     path('recurso-digital/', include('applications.book.urls')),
     path('', include('applications.home.urls')),
@@ -45,7 +46,7 @@ urlpatterns_main += static( settings.MEDIA_URL, document_root=settings.MEDIA_ROO
 # Create the Sitemap object that generates the XML file
 sitemaps = {
     # The url structure is based on the main page of the site 'main.html' -- main url
-    'site': Sitemap(
+    'site': StaticViewSitemap(
         [
             'home_app:index'
         ]
