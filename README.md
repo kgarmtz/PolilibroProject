@@ -1,1 +1,161 @@
-This is the starting template for a Basic Django project
+# POLILIBRO Django App
+
+Legacy Django project for the POLILIBRO digital book. This project was updated to run on Django 5.2 LTS while keeping CKEditor for the existing rich text content.
+
+## Project Layout
+
+```text
+application/
+  Book/                 # Django project root
+    manage.py
+    requirements.txt
+    data.clean.json     # Clean fixture for fresh local restores
+    data.json           # Old legacy fixture, includes Django metadata
+    db.sqlite3          # Local SQLite database, ignored by git
+    media/              # Uploaded files, ignored by git
+  env/
+    app_env/            # Local virtual environment
+```
+
+Run the commands below from the Django project folder:
+
+```powershell
+cd "C:\Users\kevin\Documents\POLILIBRO 2026\application\Book"
+```
+
+## Environment
+
+The virtual environment is outside the Django project folder:
+
+```powershell
+..\env\app_env\Scripts\python.exe --version
+..\env\app_env\Scripts\python.exe -m django --version
+```
+
+The app reads environment variables from `.env` through `python-decouple`. This project already includes a local `.env` file with the required development values:
+
+```text
+SECRET_KEY=...
+DEBUG=True
+```
+
+For normal local work from the `Book/` folder, you should not need to set `SECRET_KEY` manually because `python-decouple` reads `.env`.
+
+If you ever run commands from a context where `.env` is not being picked up, you can temporarily set values in the current PowerShell session:
+
+```powershell
+$env:SECRET_KEY='dummy-local-secret'
+$env:DEBUG='True'
+```
+
+Those `$env:...` values are only temporary for that shell session. Do not commit real production secrets.
+
+## Install Or Refresh Dependencies
+
+```powershell
+..\env\app_env\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+The project currently targets:
+
+```text
+Django==5.2.13
+```
+
+CKEditor is intentionally kept for now because the old book content uses CKEditor rich text fields. Django will show a warning that bundled CKEditor 4 is unsupported; this is expected and should be handled in a future editor migration.
+
+## Run Locally
+
+```powershell
+..\env\app_env\Scripts\python.exe manage.py runserver
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000/
+```
+
+Admin:
+
+```text
+http://127.0.0.1:8000/polilibroescom/
+```
+
+The `/admin/` URL is a fake admin/honeypot-style route and should return not found.
+
+## Fresh Local Database Restore
+
+Use this when you want a clean SQLite database with the saved book content.
+
+```powershell
+Remove-Item .\db.sqlite3
+..\env\app_env\Scripts\python.exe manage.py migrate
+..\env\app_env\Scripts\python.exe manage.py loaddata .\data.clean.json
+..\env\app_env\Scripts\python.exe manage.py runserver
+```
+
+If `db.sqlite3` does not exist, skip the `Remove-Item` line.
+
+`data.clean.json` includes:
+
+```text
+auth.user: 1
+home.book: 1
+book.unit: 4
+book.chapter: 12
+book.section: 44
+book.resource: 44
+```
+
+It intentionally excludes old Django-generated metadata:
+
+```text
+contenttypes.contenttype
+auth.permission
+admin.logentry
+sessions.session
+```
+
+Django recreates modern `contenttypes` and permissions during `migrate`. Old admin log entries and old sessions are not needed for the app to run.
+
+## Fixture Notes
+
+Use `data.clean.json` for new database restores.
+
+Avoid using `data.json` unless you specifically need the original legacy export. It includes old Django metadata and can fail on fresh databases with duplicate `contenttypes` errors.
+
+The fixture stores database rows and file paths only. It does not contain the uploaded media files themselves. Keep the `media/` folder backed up separately if the project depends on uploaded PDFs, SVGs, or images.
+
+## Export A New Clean Fixture
+
+After editing book content in admin, create a new clean fixture:
+
+```powershell
+$env:PYTHONUTF8='1'
+..\env\app_env\Scripts\python.exe manage.py dumpdata home book auth.user --indent 2 -o .\data.clean.json
+```
+
+`PYTHONUTF8=1` matters on Windows because some section content contains math symbols such as `⋯`.
+
+## Health Checks
+
+Run these after dependency or code changes:
+
+```powershell
+..\env\app_env\Scripts\python.exe manage.py check
+..\env\app_env\Scripts\python.exe manage.py makemigrations --check --dry-run
+..\env\app_env\Scripts\python.exe manage.py test
+```
+
+At the time of this update, there are no project tests yet, so `test` reports `0 tests`.
+
+## Annual Maintenance Checklist
+
+1. Update Django only within the 5.2 LTS line unless CKEditor has been migrated.
+2. Refresh dependencies in the virtual environment.
+3. Run `manage.py check`.
+4. Run `makemigrations --check --dry-run`.
+5. Start the server and verify the home page and `/polilibroescom/`.
+6. If content changed, export a new `data.clean.json`.
+7. Back up `data.clean.json` and the `media/` folder.
