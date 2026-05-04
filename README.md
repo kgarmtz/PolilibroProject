@@ -64,6 +64,16 @@ Django==5.2.13
 
 CKEditor is intentionally kept for now because the old book content uses CKEditor rich text fields. Django will show a warning that bundled CKEditor 4 is unsupported; this is expected and should be handled in a future editor migration.
 
+The requirements are intentionally small for PythonAnywhere deployment. The old S3 stack was removed because this project currently uses local media files:
+
+```text
+boto3
+botocore
+django-storages
+s3transfer
+jmespath
+```
+
 ## Run Locally
 
 ```powershell
@@ -180,6 +190,58 @@ $env:PYTHONUTF8='1'
 ```
 
 `PYTHONUTF8=1` matters on Windows because some section content contains math symbols such as `⋯`.
+
+## PythonAnywhere Deployment Notes
+
+This project includes a production settings file:
+
+```text
+Book/settings/prod.py
+```
+
+On PythonAnywhere, configure the web app to use:
+
+```text
+DJANGO_SETTINGS_MODULE=Book.settings.prod
+```
+
+Production environment values should look like `.env.example`:
+
+```text
+SECRET_KEY=replace-with-production-secret
+DEBUG=False
+ALLOWED_HOSTS=yourusername.pythonanywhere.com,www.example.com
+```
+
+Basic deployment flow:
+
+```powershell
+python -m pip install -r requirements.txt
+python manage.py migrate --settings=Book.settings.prod
+python manage.py loaddata data.clean.json --settings=Book.settings.prod
+python manage.py collectstatic --settings=Book.settings.prod
+```
+
+Static files are collected into:
+
+```text
+staticfiles/
+```
+
+Uploaded media files live in:
+
+```text
+media/
+```
+
+Make sure PythonAnywhere is configured to serve:
+
+```text
+/static/ -> staticfiles/
+/media/  -> media/
+```
+
+For this small mostly-read-only project, SQLite is acceptable to start. If multiple people will edit content often, consider moving the production database to MySQL on PythonAnywhere.
 
 ## Health Checks
 
