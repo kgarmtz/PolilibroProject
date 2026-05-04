@@ -127,6 +127,49 @@ Avoid using `data.json` unless you specifically need the original legacy export.
 
 The fixture stores database rows and file paths only. It does not contain the uploaded media files themselves. Keep the `media/` folder backed up separately if the project depends on uploaded PDFs, SVGs, or images.
 
+## CKEditor Uploads And Media Files
+
+The book HTML content is edited through Django admin using CKEditor fields. For example, `Section.content` is a `RichTextUploadingField`, so the admin editor can store formatted HTML in the database.
+
+The public section template renders that saved HTML with:
+
+```django
+{{ section.content|safe }}
+```
+
+This project configures CKEditor uploads with:
+
+```python
+CKEDITOR_UPLOAD_PATH = 'uploads/'
+CKEDITOR_IMAGE_BACKEND = 'pillow'
+```
+
+When using CKEditor's upload feature in the admin panel, you can select a local image from your computer. CKEditor uploads that image into the media folder using the current date:
+
+```text
+media/uploads/YYYY/MM/DD/
+```
+
+For example:
+
+```text
+media/uploads/2021/09/06/picture-1.png
+```
+
+Because `CKEDITOR_IMAGE_BACKEND = 'pillow'`, django-ckeditor also creates a thumbnail next to the original image:
+
+```text
+media/uploads/2021/09/06/picture-1_thumb.png
+```
+
+The saved HTML usually points to the original image:
+
+```html
+<img src="/media/uploads/2021/09/06/picture-1.png" alt="">
+```
+
+The `_thumb` file is mainly for the CKEditor image browser preview in the admin UI. If you manually type or paste an `<img>` tag in CKEditor's source/HTML mode, CKEditor saves that HTML, but it does not upload a file unless you use the upload feature.
+
 ## Export A New Clean Fixture
 
 After editing book content in admin, create a new clean fixture:
