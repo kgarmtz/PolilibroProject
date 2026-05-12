@@ -25,6 +25,27 @@ cd "C:\Users\kevin\Documents\POLILIBRO 2026\application\Book"
 
 ## Environment
 
+You have to create or activate a virtual environment before running the app.
+
+Create a local virtual environment from the `application/` folder:
+
+```powershell
+python -m venv .\env\app_env
+.\env\app_env\Scripts\Activate.ps1
+```
+
+Activate an existing local virtual environment:
+
+```powershell
+.\env\app_env\Scripts\Activate.ps1
+```
+
+Deactivate it:
+
+```powershell
+deactivate
+```
+
 The virtual environment is outside the Django project folder:
 
 ```powershell
@@ -191,7 +212,81 @@ $env:PYTHONUTF8='1'
 
 `PYTHONUTF8=1` matters on Windows because some section content contains math symbols such as `⋯`.
 
+And then push the new fixture to the GitHub repo. On PythonAnywhere, pull the latest code and load the updated fixture:
+
+```bash
+git pull
+python manage.py migrate --settings=Book.settings.prod
+python manage.py loaddata data.clean.json --settings=Book.settings.prod
+```
+
+Only delete `db.sqlite3` on PythonAnywhere if you intentionally want a full production database reset.
+
 ## PythonAnywhere Deployment Notes
+
+Once you create a PythonAnywhere account, use this setup checklist.
+
+1. Make sure the project is pushed to GitHub. This project currently uses:
+
+```text
+https://github.com/kgarmtz/PolilibroProject/tree/feature/2026
+```
+
+2. Open a new **Bash** console on PythonAnywhere.
+
+3. Clone the repo and switch to the deployment branch:
+
+```bash
+git clone https://github.com/kgarmtz/PolilibroProject.git
+cd PolilibroProject
+git fetch --all
+git checkout feature/2026
+git pull
+```
+
+4. Create and activate a PythonAnywhere virtual environment:
+
+```bash
+mkvirtualenv app_env --python=/usr/bin/python3.13
+```
+
+After this, future Bash consoles can activate it with:
+
+```bash
+workon app_env
+```
+
+5. Install project dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+6. In the PythonAnywhere dashboard, go to **Web** and select **Add a new web app**.
+
+7. Use the custom domain:
+
+```text
+www.polilibrocalculo.com
+```
+
+8. Select **Manual configuration** and choose the same Python version used for the virtualenv.
+
+9. In the Web tab **Virtualenv** section, use the full virtualenv path:
+
+```text
+/home/<your-pythonanywhere-username>/.virtualenvs/app_env
+```
+
+10. In the Web tab **Security** section, generate an auto-renewing Let's Encrypt certificate and enable **Force HTTPS**.
+
+Important note: `media/` is ignored by git, so it must be uploaded separately. The easiest way is to upload a ZIP through the PythonAnywhere **Files** tab and unzip it in Bash:
+
+```bash
+unzip media.zip -d /home/<your-pythonanywhere-username>/PolilibroProject/
+```
+
+If your PythonAnywhere plan has SSH access, you can also upload media in bulk from your computer with `scp` or `rsync`.
 
 This project includes a production settings file:
 
@@ -199,10 +294,28 @@ This project includes a production settings file:
 Book/settings/prod.py
 ```
 
-On PythonAnywhere, configure the web app to use:
+On PythonAnywhere, you can configure the web app to use the settings file for production
 
 ```text
 DJANGO_SETTINGS_MODULE=Book.settings.prod
+```
+
+In the Code section, you can modify the wsgi.py file:
+
+/var/www/www_polilibrocalculo_com_wsgi.py
+
+```python
+import os
+import sys
+
+path = '/home/kgarciam/PolilibroProject'
+if path not in sys.path:
+    sys.path.append(path)
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'Book.settings.prod'
+
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
 ```
 
 Production environment values should look like `.env.example`:
@@ -210,17 +323,32 @@ Production environment values should look like `.env.example`:
 ```text
 SECRET_KEY=replace-with-production-secret
 DEBUG=False
-ALLOWED_HOSTS=yourusername.pythonanywhere.com,www.example.com
+ALLOWED_HOSTS=www.polilibrocalculo.com,polilibrocalculo.com
 ```
 
-Basic deployment flow:
+In production, create a server-only `.env` file in the project folder on PythonAnywhere. You can create or upload it through the **Files** tab. Do not place `.env` inside `static/`, `staticfiles/`, or `media/`.
 
-```powershell
+Initial deployment flow:
+
+```bash
+workon app_env
 python -m pip install -r requirements.txt
 python manage.py migrate --settings=Book.settings.prod
 python manage.py loaddata data.clean.json --settings=Book.settings.prod
-python manage.py collectstatic --settings=Book.settings.prod
+python manage.py collectstatic --settings=Book.settings.prod --noinput
 ```
+
+For routine code-only updates after the site already has a database, usually run:
+
+```bash
+workon app_env
+git pull
+python -m pip install -r requirements.txt
+python manage.py migrate --settings=Book.settings.prod
+python manage.py collectstatic --settings=Book.settings.prod --noinput
+```
+
+Only run `loaddata data.clean.json` again when you intentionally want to reload the fixture data.
 
 Static files are collected into:
 
@@ -237,9 +365,13 @@ media/
 Make sure PythonAnywhere is configured to serve:
 
 ```text
-/static/ -> staticfiles/
-/media/  -> media/
+/static/ -> /home/<your-pythonanywhere-username>/PolilibroProject/staticfiles
+/media/  -> /home/<your-pythonanywhere-username>/PolilibroProject/media
 ```
+
+`staticfiles/` is generated using the `collectstatic` Django command.
+
+Both `/static/` and `/media/` are set in the **Static files** section of the Web tab on PythonAnywhere.
 
 For this small mostly-read-only project, SQLite is acceptable to start. If multiple people will edit content often, consider moving the production database to MySQL on PythonAnywhere.
 
